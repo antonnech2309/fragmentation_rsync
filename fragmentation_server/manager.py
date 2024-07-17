@@ -1,11 +1,6 @@
-import asyncio
-import os
-from starlette.websockets import WebSocket
-from dotenv import load_dotenv
 import websockets
-import json
-
-load_dotenv()
+from starlette.websockets import WebSocket
+from websockets import WebSocketClientProtocol
 
 
 class ConnectionManager:
@@ -16,22 +11,29 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections[server_ip] = websocket
 
-    def disconnect(self, server_ip: str):
-        if server_ip in self.active_connections:
-            del self.active_connections[server_ip]
+    async def disconnect(self, server_ip: str = ""):
+        websocket = self.active_connections[server_ip]
+        await websocket.close()
+        del self.active_connections[server_ip]
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send(message)
+    @staticmethod
+    async def send_personal_message(message: str, websocket: WebSocket):
+        if isinstance(websocket, WebSocketClientProtocol):
+            await websocket.send(message)
+        else:
+            await websocket.send_text(message)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections.values():
-            await connection.send(message)
+            if isinstance(connection, WebSocketClientProtocol):
+                await connection.send(message)
+            else:
+                await connection.send_text(message)
 
-    async def connect_to_external_ws(self, destination_ip: str, server_ip: str):
-        url = f"ws://{destination_ip}:8000/ws/{server_ip}"
+    async def connect_to_external_ws(self, destination_ip: str, server_ip: str, port: int = 8000):
+        url = f"ws://{destination_ip}:{port}/ws/{server_ip}"
 
-        external_ws = await websockets.connect(url, timeout=60)
+        external_ws = await websockets.connect(url)
         self.active_connections[server_ip] = external_ws
         print(f"Connected to external WebSocket at {url}")
-        print(dir(external_ws))
         return external_ws

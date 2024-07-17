@@ -1,6 +1,9 @@
-from fastapi import FastAPI
-from fragmentation_server.routes import router
+import os
 
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fragmentation_server.router import router
+load_dotenv()
 app = FastAPI()
 
 app.include_router(router)
@@ -14,4 +17,4 @@ def read_root():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="188.208.196.87", port=8000)
+    uvicorn.run(app, host=os.getenv("MY_IP"), port=3000)

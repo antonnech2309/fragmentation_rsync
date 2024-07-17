@@ -1,11 +1,11 @@
 # Test your FastAPI endpoints
 
-WEBSOCKET ws://80.79.4.159:8000/ws/188.208.196.87
+WEBSOCKET ws://192.168.31.93:8000/ws/192.168.31.93
 Accept: application/json
 
 ###
 
-GET http://188.208.196.87:8000/trigger_websocket_connection/
+GET http://192.168.31.93:3000/trigger_websocket_connection/
 Accept: application/json
 
 ###
